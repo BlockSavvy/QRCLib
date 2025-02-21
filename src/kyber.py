@@ -43,7 +43,7 @@ def generate_keys(params: KyberParams = KyberParams()) -> Tuple[Dict, Dict]:
     t = np.zeros((params.k, params.n))
     for i in range(params.k):
         for j in range(params.k):
-            product = utils.polynomial_multiply(A[i][j], s[j], params.q, params.n)
+            product = utils.polynomial_multiply(A[i][j], s[j], params.q)
             t[i] = (t[i] + product) % params.q
         t[i] = (t[i] + e[i]) % params.q
     

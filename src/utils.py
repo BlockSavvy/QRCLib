@@ -6,9 +6,16 @@ import secrets
 import numpy as np
 from typing import Union, List, Tuple
 
-def secure_random_bytes(n: int) -> bytes:
-    """Generate cryptographically secure random bytes."""
-    return secrets.token_bytes(n)
+def secure_random_bytes(length: int) -> bytes:
+    """Generate cryptographically secure random bytes.
+    
+    Args:
+        length: Number of bytes to generate
+        
+    Returns:
+        bytes: Secure random bytes
+    """
+    return secrets.token_bytes(length)
 
 def secure_random_int(min_val: int, max_val: int) -> int:
     """Generate a cryptographically secure random integer in the range [min_val, max_val]."""
@@ -19,15 +26,17 @@ def bytes_to_bits(data: bytes) -> List[int]:
     result = []
     for byte in data:
         for i in range(8):
-            result.append((byte >> i) & 1)
+            result.append((byte >> (7 - i)) & 1)
     return result
 
 def bits_to_bytes(bits: List[int]) -> bytes:
-    """Convert a list of bits back to bytes."""
-    result = bytearray((len(bits) + 7) // 8)
-    for i, bit in enumerate(bits):
-        if bit:
-            result[i // 8] |= 1 << (i % 8)
+    """Convert a list of bits to bytes."""
+    result = []
+    for i in range(0, len(bits), 8):
+        byte = 0
+        for j in range(min(8, len(bits) - i)):
+            byte |= bits[i + j] << (7 - j)
+        result.append(byte)
     return bytes(result)
 
 def constant_time_compare(a: bytes, b: bytes) -> bool:
@@ -39,21 +48,45 @@ def constant_time_compare(a: bytes, b: bytes) -> bool:
         result |= x ^ y
     return result == 0
 
-def generate_matrix(rows: int, cols: int, q: int) -> np.ndarray:
-    """Generate a random matrix with entries modulo q."""
-    return np.array([[secure_random_int(0, q-1) for _ in range(cols)] 
-                     for _ in range(rows)])
+def generate_matrix(rows: int, cols: int, modulus: int) -> np.ndarray:
+    """Generate a random matrix with elements in [0, modulus)."""
+    return np.array([
+        [secure_random_int(0, modulus - 1) for _ in range(cols)]
+        for _ in range(rows)
+    ])
 
-def find_primitive_root(q: int) -> int:
-    """Find a primitive root modulo q."""
-    if q == 3329:  # Kyber's q
-        return 17  # Known primitive root for Kyber's q
-    elif q == 8380417:  # Dilithium's q
-        return 5  # Known primitive root for Dilithium's q
+def find_primitive_root(modulus: int) -> int:
+    """Find a primitive root modulo n."""
+    if modulus == 3329:  # Kyber prime
+        return 17
+    elif modulus == 8380417:  # Dilithium prime
+        return 1753
+    elif modulus == 17:  # Test prime
+        return 3  # Known primitive root for 17
     
-    # For other primes, we would implement a proper search
-    # This is a placeholder that works for our specific use cases
-    return 17
+    def is_primitive_root(a: int, modulus: int, factors: List[int]) -> bool:
+        """Check if a is a primitive root modulo n."""
+        for factor in factors:
+            if pow(a, (modulus - 1) // factor, modulus) == 1:
+                return False
+        return True
+    
+    # Find prime factors of modulus - 1
+    n = modulus - 1
+    factors = []
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            factors.append(i)
+            while n % i == 0:
+                n //= i
+    if n > 1:
+        factors.append(n)
+    
+    # Find primitive root
+    a = 2
+    while not is_primitive_root(a, modulus, factors):
+        a += 1
+    return a
 
 def mod_inverse(a: int, m: int) -> int:
     """Calculate the modular multiplicative inverse of a modulo m."""
@@ -76,98 +109,121 @@ def bit_reverse(x: int, bits: int) -> int:
         x >>= 1
     return result
 
-def ntt_transform(polynomial: np.ndarray, modulus: int, inverse: bool = False) -> np.ndarray:
+def ntt_transform(poly: np.ndarray, modulus: int) -> np.ndarray:
     """
-    Perform Number Theoretic Transform (NTT) on a polynomial.
+    Compute the Number Theoretic Transform (NTT) of a polynomial.
     
     Args:
-        polynomial: Coefficient array of the polynomial
-        modulus: The modulus for the finite field
-        inverse: Whether to perform inverse NTT
+        poly: Polynomial coefficients
+        modulus: Prime modulus
     
     Returns:
-        Transformed polynomial coefficients
+        NTT transformed polynomial
     """
-    n = len(polynomial)
-    if n & (n - 1):  # Check if n is power of 2
+    n = len(poly)
+    if n & (n - 1) != 0:
         raise ValueError("Length must be a power of 2")
-        
-    # Find primitive root and calculate primitive nth root of unity
+    
+    # Find primitive root and generate powers
     g = find_primitive_root(modulus)
     omega = pow(g, (modulus - 1) // n, modulus)
-    if inverse:
-        omega = mod_inverse(omega, modulus)
     
-    # Bit-reverse copy of the polynomial
-    result = np.zeros(n, dtype=np.int64)
-    for i in range(n):
-        rev = bit_reverse(i, n.bit_length() - 1)
-        result[i] = polynomial[rev]
+    # Precompute powers of omega
+    omegas = np.array([pow(omega, i, modulus) for i in range(n)], dtype=int)
     
-    # Cooley-Tukey NTT
-    for size in range(2, n + 1, 2):
-        half_size = size // 2
-        omega_step = pow(omega, n // size, modulus)
-        for i in range(0, n, size):
-            omega_i = 1
-            for j in range(half_size):
-                pos1, pos2 = i + j, i + j + half_size
-                temp = (omega_i * result[pos2]) % modulus
-                result[pos2] = (result[pos1] - temp) % modulus
-                result[pos1] = (result[pos1] + temp) % modulus
-                omega_i = (omega_i * omega_step) % modulus
+    # Initialize result array
+    result = poly.copy()
     
-    # Scale for inverse transform
-    if inverse:
-        n_inv = mod_inverse(n, modulus)
-        result = [(x * n_inv) % modulus for x in result]
+    # Cooley-Tukey FFT algorithm
+    for s in range(int(np.log2(n))):
+        m = 1 << s
+        for k in range(0, n, 2 * m):
+            for j in range(m):
+                idx1 = k + j
+                idx2 = k + j + m
+                u = result[idx1]
+                v = (result[idx2] * omegas[j * (n // (2 * m))]) % modulus
+                result[idx1] = (u + v) % modulus
+                result[idx2] = (u - v) % modulus
     
-    return np.array(result)
+    return result
 
-def inverse_ntt_transform(polynomial: np.ndarray, modulus: int) -> np.ndarray:
+def intt_transform(poly: np.ndarray, modulus: int) -> np.ndarray:
     """
-    Perform inverse Number Theoretic Transform.
+    Compute the Inverse Number Theoretic Transform (INTT) of a polynomial.
     
     Args:
-        polynomial: NTT-transformed polynomial coefficients
-        modulus: The modulus for the finite field
+        poly: NTT transformed polynomial
+        modulus: Prime modulus
     
     Returns:
         Original polynomial coefficients
     """
-    return ntt_transform(polynomial, modulus, inverse=True)
+    n = len(poly)
+    if n & (n - 1) != 0:
+        raise ValueError("Length must be a power of 2")
+    
+    # Find primitive root and generate powers
+    g = find_primitive_root(modulus)
+    omega = pow(g, (modulus - 1) // n, modulus)
+    omega_inv = pow(omega, -1, modulus)
+    n_inv = pow(n, -1, modulus)
+    
+    # Precompute inverse powers of omega
+    omegas_inv = np.array([pow(omega_inv, i, modulus) for i in range(n)], dtype=int)
+    
+    # Initialize result array
+    result = poly.copy()
+    
+    # Gentleman-Sande FFT algorithm
+    for s in range(int(np.log2(n)) - 1, -1, -1):
+        m = 1 << s
+        for k in range(0, n, 2 * m):
+            for j in range(m):
+                idx1 = k + j
+                idx2 = k + j + m
+                u = result[idx1]
+                v = result[idx2]
+                result[idx1] = (u + v) % modulus
+                result[idx2] = ((u - v) * omegas_inv[j * (n // (2 * m))]) % modulus
+    
+    # Scale by n^(-1)
+    result = (result * n_inv) % modulus
+    
+    return result
 
-def polynomial_multiply(a: np.ndarray, b: np.ndarray, modulus: int, n: int = 256) -> np.ndarray:
+def polynomial_multiply(a: np.ndarray, b: np.ndarray, modulus: int) -> np.ndarray:
     """
-    Multiply two polynomials in R_q = Z_q[X]/(X^n + 1) using NTT.
+    Multiply two polynomials modulo x^n + 1 using NTT.
     
     Args:
         a: First polynomial coefficients
         b: Second polynomial coefficients
-        modulus: Modulus for coefficient reduction
-        n: Degree of X^n + 1 (default: 256 for Kyber/Dilithium)
+        modulus: Prime modulus
     
     Returns:
-        Resulting polynomial coefficients modulo q
+        Product polynomial coefficients
     """
-    # Ensure inputs are 1D arrays of correct length
-    a = np.asarray(a).flatten()[:n]
-    b = np.asarray(b).flatten()[:n]
+    n = len(a)
+    if n != len(b):
+        raise ValueError("Polynomials must have same length")
     
-    # Pad arrays to length n if needed
-    if len(a) < n:
-        a = np.pad(a, (0, n - len(a)))
-    if len(b) < n:
-        b = np.pad(b, (0, n - len(b)))
+    # Find next power of 2
+    n_padded = 1
+    while n_padded < n:
+        n_padded *= 2
+    
+    # Pad polynomials
+    a_padded = np.pad(a, (0, n_padded - n))
+    b_padded = np.pad(b, (0, n_padded - n))
     
     # Transform to NTT domain
-    a_ntt = ntt_transform(a, modulus)
-    b_ntt = ntt_transform(b, modulus)
+    a_ntt = ntt_transform(a_padded, modulus)
+    b_ntt = ntt_transform(b_padded, modulus)
     
-    # Multiply in NTT domain
+    # Multiply point-wise
     c_ntt = (a_ntt * b_ntt) % modulus
     
-    # Transform back to normal domain
-    c = inverse_ntt_transform(c_ntt, modulus)
-    
-    return c % modulus 
+    # Transform back and truncate
+    result = intt_transform(c_ntt, modulus)
+    return result[:n] 

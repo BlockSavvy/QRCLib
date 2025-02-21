@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background-dark: #0a0a0f;
+  --background-darker: #050508;
+  --text-primary: #e0e0ff;
+  --text-secondary: #8a8aa3;
+  --accent-neon: #00ff9d;
+  --accent-neon-glow: #00ff9d40;
+  --accent-cyber: #ff2a6d;
+  --accent-cyber-glow: #ff2a6d40;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background-dark);
+  color: var(--text-primary);
+  background-image: 
+    linear-gradient(45deg, var(--background-darker) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--background-darker) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--background-darker) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--background-darker) 75%);
+  background-size: 20px 20px;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Cyberpunk card styling */
+.cyber-card {
+  background: var(--background-darker);
+  border: 1px solid var(--accent-neon);
+  box-shadow: 0 0 10px var(--accent-neon-glow);
+  transition: all 0.3s ease;
+}
+
+.cyber-card:hover {
+  box-shadow: 0 0 20px var(--accent-neon-glow);
+  transform: translateY(-2px);
+}
+
+/* Neon text effect */
+.neon-text {
+  color: var(--accent-neon);
+  text-shadow: 0 0 5px var(--accent-neon-glow);
+}
+
+/* Cyber button */
+.cyber-button {
+  background: var(--background-darker);
+  color: var(--accent-cyber);
+  border: 1px solid var(--accent-cyber);
+  box-shadow: 0 0 10px var(--accent-cyber-glow);
+  transition: all 0.3s ease;
+}
+
+.cyber-button:hover {
+  background: var(--accent-cyber);
+  color: var(--background-darker);
+  box-shadow: 0 0 20px var(--accent-cyber-glow);
+}
+
+/* Code blocks */
+pre {
+  background: var(--background-darker);
+  border: 1px solid var(--accent-neon);
+  box-shadow: inset 0 0 10px var(--accent-neon-glow);
+  padding: 1rem;
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: 'Fira Code', monospace;
+}
+
+/* Navigation */
+nav {
+  background: var(--background-darker);
+  border-bottom: 1px solid var(--accent-neon);
+  box-shadow: 0 0 10px var(--accent-neon-glow);
+}
+
+/* Form inputs */
+input, textarea {
+  color: var(--text-primary) !important;
+  background: var(--background-darker) !important;
+  border: 1px solid var(--accent-neon) !important;
+  box-shadow: inset 0 0 5px var(--accent-neon-glow) !important;
+  padding: 0.5rem !important;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--accent-cyber) !important;
+  box-shadow: inset 0 0 10px var(--accent-cyber-glow) !important;
+  outline: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.7;
+}

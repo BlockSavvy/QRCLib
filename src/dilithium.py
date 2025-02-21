@@ -57,7 +57,7 @@ def generate_keys(params: DilithiumParams = DilithiumParams()) -> Tuple[Dict, Di
     t = np.zeros((params.k, params.n))
     for i in range(params.k):
         for j in range(params.l):
-            product = utils.polynomial_multiply(A[i][j], s1[j], params.q, params.n)
+            product = utils.polynomial_multiply(A[i][j], s1[j], params.q)
             t[i] = (t[i] + product) % params.q
     
     signing_key = {
@@ -95,7 +95,7 @@ def sign(signing_key: Dict, message: bytes,
         signing_key: The signer's private key
         message: The message to sign
         params: Dilithium parameters
-    
+        
     Returns:
         bytes: The signature
     """
@@ -139,7 +139,7 @@ def verify(verification_key: Dict, message: bytes, signature: bytes,
         message: The message that was signed
         signature: The signature to verify
         params: Dilithium parameters
-    
+        
     Returns:
         bool: True if the signature is valid, False otherwise
     """
