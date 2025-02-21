@@ -14,7 +14,7 @@ A Python library implementing quantum-resistant cryptographic algorithms, includ
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/QRCLib.git
+git clone https://github.com/BlockSavvy/QRCLib.git
 cd QRCLib
 ```
 
@@ -240,10 +240,14 @@ random_data = secure_random_bytes(32)
 ## Contributing
 
 1. Fork the repository
-1. Create a feature branch
-1. Make your changes
-1. Run tests
-1. Submit a pull request
+2. Create a feature branch
+3. Make your changes
+4. Run tests
+5. Submit a pull request
+
+For security-related issues or concerns, please contact:
+- Email: m@aiya.sh
+- GitHub Security Advisories: https://github.com/BlockSavvy/QRCLib/security/advisories
 
 ## License
 

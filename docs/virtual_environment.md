@@ -1,8 +1,8 @@
-# Virtual Environment Management for PQCL
+# Virtual Environment Management for QRCLib
 
 ## Overview
 
-This document explains how to manage the Python virtual environment for the Quantum-Resistant Cryptography Library (PQCL) project.
+This document explains how to manage the Python virtual environment for the Quantum-Resistant Cryptography Library (QRCLib) project.
 
 ## Why Virtual Environments?
 
@@ -155,12 +155,10 @@ Virtual environments are isolated Python environments that:
 Current project dependencies (from requirements.txt):
 
 ```python
-numpy>=1.24.0
-pytest>=7.3.1
-cryptography>=41.0.0
-coverage>=7.3.2
-pytest-cov>=4.1.0
-pytest-xdist>=3.3.1
+numpy>=1.21.0
+cryptography>=3.4.7
+flask>=2.0.1
+pytest>=6.2.5
 ```
 
 ## Security Considerations
