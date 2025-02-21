@@ -152,5 +152,5 @@ QRCLib implements post-quantum cryptographic algorithms that are designed to be 
 ## Contact
 
 For security-related issues or concerns:
-- Email: [security@example.com]
-- GitHub Security Advisories: [https://github.com/BlockSavvy/QRCLib/security/advisories] 
+* Email: [security@example.com]
+* GitHub Security Advisories: [https://github.com/BlockSavvy/QRCLib/security/advisories] 

@@ -83,7 +83,7 @@ def decapsulate(ciphertext: Dict, private_key: Dict, params: KyberParams = Kyber
 
 The Dilithium module implements the Dilithium digital signature scheme.
 
-### Classes
+### Dilithium Classes
 
 #### `DilithiumParams`
 
@@ -95,9 +95,9 @@ class DilithiumParams:
         """Initialize Dilithium parameters (security level 2)."""
 ```
 
-### Functions
+### Dilithium Functions
 
-#### `generate_keys`
+#### `dilithium_generate_keys`
 
 ```python
 def generate_keys(params: DilithiumParams = DilithiumParams()) -> Tuple[Dict, Dict]:
@@ -115,7 +115,7 @@ def generate_keys(params: DilithiumParams = DilithiumParams()) -> Tuple[Dict, Di
     """
 ```
 
-#### `sign`
+#### `dilithium_sign`
 
 ```python
 def sign(signing_key: Dict, message: bytes, params: DilithiumParams = DilithiumParams()) -> bytes:
@@ -135,7 +135,7 @@ def sign(signing_key: Dict, message: bytes, params: DilithiumParams = DilithiumP
     """
 ```
 
-#### `verify`
+#### `dilithium_verify`
 
 ```python
 def verify(verification_key: Dict, message: bytes, signature: bytes,
@@ -158,7 +158,7 @@ def verify(verification_key: Dict, message: bytes, signature: bytes,
 
 The utilities module provides common cryptographic operations used by both Kyber and Dilithium.
 
-### Functions
+### Utility Functions
 
 #### `secure_random_bytes`
 

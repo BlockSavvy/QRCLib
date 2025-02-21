@@ -180,7 +180,7 @@ The library implements an efficient Number Theoretic Transform (NTT) for polynom
        return verify_challenge(c, h)
    ```
 
-## Utility Functions
+## Core Utility Functions
 
 ### Constant-Time Operations
 
