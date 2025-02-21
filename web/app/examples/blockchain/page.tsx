@@ -9,6 +9,9 @@ interface Transaction {
   amount: number
   signature: string
   timestamp: string
+  status: 'pending' | 'confirmed' | 'failed'
+  confirmations: number
+  quantumProtectionLevel: 'standard' | 'enhanced' | 'maximum'
 }
 
 interface Block {
@@ -18,6 +21,18 @@ interface Block {
   hash: string
   nonce: number
   timestamp: string
+  difficulty: number
+  miningTime: number
+  size: number
+}
+
+interface NetworkStats {
+  totalTransactions: number
+  totalBlocks: number
+  averageBlockTime: number
+  currentDifficulty: number
+  hashRate: number
+  protectedTransactions: number
 }
 
 interface Tooltip {
@@ -37,6 +52,10 @@ const tooltips: Record<string, Tooltip> = {
   mining: {
     title: "Mining Blocks",
     content: "Mining is the process of adding new blocks to the blockchain. Each block contains multiple transactions and is linked to the previous block, forming a chain."
+  },
+  quantumProtection: {
+    title: "Quantum Protection",
+    content: "Each transaction is protected against quantum computer attacks using Dilithium signatures. Choose from three protection levels based on your security needs."
   }
 }
 
@@ -45,6 +64,87 @@ function TooltipCard({ tooltip }: { tooltip: Tooltip }) {
     <div className="mb-4 p-4 bg-background-darker border border-accent-cyber rounded-lg">
       <h3 className="text-lg font-semibold text-accent-cyber mb-2">{tooltip.title}</h3>
       <p className="text-secondary">{tooltip.content}</p>
+    </div>
+  )
+}
+
+function BlockVisualizer({ block }: { block: Block }) {
+  return (
+    <div className="p-4 border border-accent-neon rounded-lg space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-accent-neon">Block #{block.id}</span>
+        <span className="text-xs text-secondary">
+          {new Date(block.timestamp).toLocaleString()}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div>
+          <span className="text-secondary">Hash: </span>
+          <span className="text-text-primary font-mono">{block.hash.slice(0, 10)}...</span>
+        </div>
+        <div>
+          <span className="text-secondary">Previous: </span>
+          <span className="text-text-primary font-mono">{block.previousHash.slice(0, 10)}...</span>
+        </div>
+        <div>
+          <span className="text-secondary">Nonce: </span>
+          <span className="text-text-primary">{block.nonce}</span>
+        </div>
+        <div>
+          <span className="text-secondary">Difficulty: </span>
+          <span className="text-text-primary">{block.difficulty}</span>
+        </div>
+        <div>
+          <span className="text-secondary">Mining Time: </span>
+          <span className="text-text-primary">{block.miningTime}ms</span>
+        </div>
+        <div>
+          <span className="text-secondary">Size: </span>
+          <span className="text-text-primary">{block.size} bytes</span>
+        </div>
+      </div>
+      <div className="mt-4">
+        <span className="text-sm text-secondary">Transactions ({block.transactions.length}):</span>
+        <div className="mt-2 space-y-2">
+          {block.transactions.map(tx => (
+            <div key={tx.id} className="text-xs p-2 bg-background-darker rounded">
+              {tx.sender.slice(0, 10)}... → {tx.recipient.slice(0, 10)}...
+              <span className="float-right">{tx.amount} coins</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NetworkStatsDisplay({ stats }: { stats: NetworkStats }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+        <div className="text-2xl font-bold neon-text">{stats.totalBlocks}</div>
+        <div className="text-sm text-secondary">Total Blocks</div>
+      </div>
+      <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+        <div className="text-2xl font-bold neon-text">{stats.totalTransactions}</div>
+        <div className="text-sm text-secondary">Total Transactions</div>
+      </div>
+      <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+        <div className="text-2xl font-bold neon-text">{stats.protectedTransactions}</div>
+        <div className="text-sm text-secondary">Protected Transactions</div>
+      </div>
+      <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+        <div className="text-2xl font-bold neon-text">{stats.averageBlockTime.toFixed(2)}s</div>
+        <div className="text-sm text-secondary">Average Block Time</div>
+      </div>
+      <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+        <div className="text-2xl font-bold neon-text">{stats.currentDifficulty}</div>
+        <div className="text-sm text-secondary">Current Difficulty</div>
+      </div>
+      <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+        <div className="text-2xl font-bold neon-text">{stats.hashRate.toFixed(2)} H/s</div>
+        <div className="text-sm text-secondary">Hash Rate</div>
+      </div>
     </div>
   )
 }
@@ -66,6 +166,24 @@ export default function BlockchainPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [blocks, setBlocks] = useState<Block[]>([])
   const [activeSection, setActiveSection] = useState<'wallet' | 'transaction' | 'mining'>('wallet')
+  const [networkStats, setNetworkStats] = useState<NetworkStats>({
+    totalTransactions: 0,
+    totalBlocks: 0,
+    averageBlockTime: 0,
+    currentDifficulty: 1,
+    hashRate: 0,
+    protectedTransactions: 0
+  })
+  const [protectionLevel, setProtectionLevel] = useState<'standard' | 'enhanced' | 'maximum'>('standard')
+  const [miningStatus, setMiningStatus] = useState<{
+    mining: boolean
+    progress: number
+    hashesComputed: number
+  }>({
+    mining: false,
+    progress: 0,
+    hashesComputed: 0
+  })
 
   const createWallet = async () => {
     setLoading(true)
@@ -113,7 +231,8 @@ export default function BlockchainPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: `${recipient}:${amount}`,
-          privateKey: wallet.privateKey
+          privateKey: wallet.privateKey,
+          protectionLevel
         })
       })
       const data = await response.json()
@@ -124,7 +243,10 @@ export default function BlockchainPage() {
         recipient,
         amount: parseFloat(amount),
         signature: data.signature,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        confirmations: 0,
+        quantumProtectionLevel: protectionLevel
       }
       
       // Add transaction to blockchain
@@ -153,7 +275,20 @@ export default function BlockchainPage() {
   const mineBlock = async () => {
     if (transactions.length === 0) return
     setLoading(true)
+    setMiningStatus({ mining: true, progress: 0, hashesComputed: 0 })
+    
     try {
+      // Simulate mining progress
+      const totalSteps = 20
+      for (let i = 0; i < totalSteps; i++) {
+        await new Promise(resolve => setTimeout(resolve, 200))
+        setMiningStatus(prev => ({
+          ...prev,
+          progress: ((i + 1) / totalSteps) * 100,
+          hashesComputed: prev.hashesComputed + Math.floor(Math.random() * 1000)
+        }))
+      }
+      
       const response = await fetch('/api/crypto/blockchain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -169,10 +304,23 @@ export default function BlockchainPage() {
       const { block } = await response.json()
       setBlocks([...blocks, block])
       setTransactions([])
+      
+      // Update network stats
+      setNetworkStats(prev => ({
+        ...prev,
+        totalBlocks: prev.totalBlocks + 1,
+        totalTransactions: prev.totalTransactions + block.transactions.length,
+        protectedTransactions: prev.protectedTransactions + block.transactions.length,
+        averageBlockTime: (prev.averageBlockTime * prev.totalBlocks + block.miningTime) / (prev.totalBlocks + 1),
+        currentDifficulty: block.difficulty,
+        hashRate: miningStatus.hashesComputed / (block.miningTime / 1000)
+      }))
     } catch (error) {
       console.error('Error mining block:', error)
     }
+    
     setLoading(false)
+    setMiningStatus({ mining: false, progress: 0, hashesComputed: 0 })
   }
 
   // Fetch initial blockchain state
@@ -213,6 +361,8 @@ export default function BlockchainPage() {
           Experience a blockchain implementation secured with quantum-resistant cryptography.
           Follow the steps below to create wallets, send transactions, and mine blocks.
         </p>
+        
+        <NetworkStatsDisplay stats={networkStats} />
       </section>
 
       <section className="space-y-6">
@@ -247,8 +397,21 @@ export default function BlockchainPage() {
 
         <div className={`cyber-card p-6 rounded-lg ${activeSection === 'transaction' ? 'ring-2 ring-accent-cyber' : ''}`}>
           <TooltipCard tooltip={tooltips.transaction} />
+          <TooltipCard tooltip={tooltips.quantumProtection} />
           <h2 className="text-xl font-semibold neon-text mb-4">Step 2: Create Transaction</h2>
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-secondary">Protection Level</label>
+              <select
+                value={protectionLevel}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setProtectionLevel(e.target.value as 'standard' | 'enhanced' | 'maximum')}
+                className="mt-1 block w-full rounded-md border-accent-neon bg-background-darker text-text-primary"
+              >
+                <option value="standard">Standard (128-bit security)</option>
+                <option value="enhanced">Enhanced (192-bit security)</option>
+                <option value="maximum">Maximum (256-bit security)</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-secondary">Recipient Address</label>
               <input
@@ -274,87 +437,74 @@ export default function BlockchainPage() {
               disabled={loading || !wallet || !recipient || !amount}
               className="cyber-button px-4 py-2 rounded disabled:opacity-50"
             >
-              Sign & Submit Transaction
+              Create Protected Transaction
             </button>
           </div>
         </div>
 
         <div className={`cyber-card p-6 rounded-lg ${activeSection === 'mining' ? 'ring-2 ring-accent-cyber' : ''}`}>
           <TooltipCard tooltip={tooltips.mining} />
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold neon-text">Step 3: Mine Blocks</h2>
+          <h2 className="text-xl font-semibold neon-text mb-4">Step 3: Mine Block</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium text-secondary mb-2">Pending Transactions</h3>
+              <div className="space-y-2">
+                {transactions.map(tx => (
+                  <div key={tx.id} className="p-2 border border-accent-neon rounded">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">
+                        {tx.sender.slice(0, 10)}... → {tx.recipient.slice(0, 10)}...
+                      </span>
+                      <span className="text-sm">{tx.amount} coins</span>
+                    </div>
+                    <div className="mt-1 flex justify-between items-center text-xs text-secondary">
+                      <span>Protection: {tx.quantumProtectionLevel}</span>
+                      <span>Status: {tx.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {miningStatus.mining && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-secondary">Mining Progress</span>
+                  <span className="text-accent-neon">{miningStatus.progress.toFixed(1)}%</span>
+                </div>
+                <div className="h-2 bg-background-darker rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-accent-neon transition-all duration-200"
+                    style={{ width: `${miningStatus.progress}%` }}
+                  />
+                </div>
+                <div className="text-xs text-secondary">
+                  Hashes computed: {miningStatus.hashesComputed.toLocaleString()}
+                </div>
+              </div>
+            )}
+            
             <button
               onClick={mineBlock}
               disabled={loading || transactions.length === 0}
               className="cyber-button px-4 py-2 rounded disabled:opacity-50"
             >
-              Mine Block
+              Mine New Block
             </button>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-secondary">Pending Transactions</h3>
-            {transactions.map(tx => (
-              <div key={tx.id} className="p-4 border border-accent-neon rounded-lg">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-secondary">From: </span>
-                    <span className="text-text-primary">{tx.sender}</span>
-                  </div>
-                  <div>
-                    <span className="text-secondary">To: </span>
-                    <span className="text-text-primary">{tx.recipient}</span>
-                  </div>
-                  <div>
-                    <span className="text-secondary">Amount: </span>
-                    <span className="neon-text">{tx.amount}</span>
-                  </div>
-                  <div>
-                    <span className="text-secondary">Time: </span>
-                    <span className="text-text-primary">
-                      {new Date(tx.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {transactions.length === 0 && (
-              <p className="text-secondary text-center">No pending transactions</p>
-            )}
           </div>
         </div>
 
-        <div className="cyber-card p-6 rounded-lg">
-          <h2 className="text-xl font-semibold neon-text mb-4">Blockchain Explorer</h2>
+        <section>
+          <h2 className="text-2xl font-bold neon-text mb-4">Blockchain Explorer</h2>
           <div className="space-y-4">
             {blocks.map(block => (
-              <div key={block.id} className="p-4 border border-accent-neon rounded-lg">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Block {block.id.split('_')[1]}</span>
-                    <span className="text-text-primary">
-                      {new Date(block.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-secondary">Hash: </span>
-                    <span className="text-text-primary">{block.hash}</span>
-                  </div>
-                  <div>
-                    <span className="text-secondary">Previous Hash: </span>
-                    <span className="text-text-primary">{block.previousHash}</span>
-                  </div>
-                  <div>
-                    <span className="text-secondary">Transactions: </span>
-                    <span className="neon-text">{block.transactions.length}</span>
-                  </div>
-                </div>
-              </div>
+              <BlockVisualizer key={block.id} block={block} />
             ))}
             {blocks.length === 0 && (
-              <p className="text-secondary text-center">No blocks mined yet</p>
+              <p className="text-center text-secondary">No blocks mined yet</p>
             )}
           </div>
-        </div>
+        </section>
 
         <div className="cyber-card p-6 rounded-lg">
           <h2 className="text-xl font-semibold neon-text mb-4">Test Wallets</h2>

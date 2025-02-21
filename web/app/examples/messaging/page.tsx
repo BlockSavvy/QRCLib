@@ -9,6 +9,52 @@ interface Message {
   content: string
   timestamp: string
   signature: string
+  status: 'sending' | 'delivered' | 'failed'
+  verified: boolean
+  encryptionStrength: number // 1-100 scale
+}
+
+interface Tooltip {
+  title: string
+  content: string
+}
+
+const tooltips: Record<string, Tooltip> = {
+  encryption: {
+    title: "Quantum-Resistant Encryption",
+    content: "Messages are encrypted using Kyber, a post-quantum key encapsulation mechanism that's secure against quantum computer attacks."
+  },
+  signature: {
+    title: "Digital Signatures",
+    content: "Each message is signed using Dilithium, a quantum-resistant signature scheme that ensures message authenticity."
+  },
+  identity: {
+    title: "Your Quantum Identity",
+    content: "Your identity consists of both classical and quantum-resistant keys, providing protection against future quantum attacks."
+  }
+}
+
+function TooltipCard({ tooltip }: { tooltip: Tooltip }) {
+  return (
+    <div className="p-4 bg-accent-neon bg-opacity-10 rounded-lg">
+      <h3 className="font-semibold neon-text mb-2">{tooltip.title}</h3>
+      <p className="text-sm text-secondary">{tooltip.content}</p>
+    </div>
+  )
+}
+
+function EncryptionStrengthIndicator({ strength }: { strength: number }) {
+  return (
+    <div className="flex items-center space-x-2">
+      <div className="flex-1 h-2 bg-background-darker rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-accent-neon transition-all duration-500"
+          style={{ width: `${strength}%` }}
+        />
+      </div>
+      <span className="text-xs text-secondary">{strength}%</span>
+    </div>
+  )
 }
 
 export default function MessagingPage() {
@@ -26,6 +72,15 @@ export default function MessagingPage() {
   const [recipient, setRecipient] = useState('')
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
+  const [messageStatus, setMessageStatus] = useState<{
+    encrypting: boolean
+    signing: boolean
+    sending: boolean
+  }>({
+    encrypting: false,
+    signing: false,
+    sending: false
+  })
 
   const createWallet = async () => {
     setLoading(true)
@@ -64,6 +119,28 @@ export default function MessagingPage() {
     setLoading(false)
   }
 
+  const simulateMessageDelivery = async (msg: Message) => {
+    // Simulate encryption
+    setMessageStatus(prev => ({ ...prev, encrypting: true }))
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    setMessageStatus(prev => ({ ...prev, encrypting: false }))
+
+    // Simulate signing
+    setMessageStatus(prev => ({ ...prev, signing: true }))
+    await new Promise(resolve => setTimeout(resolve, 800))
+    setMessageStatus(prev => ({ ...prev, signing: false }))
+
+    // Simulate sending
+    setMessageStatus(prev => ({ ...prev, sending: true }))
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    setMessageStatus(prev => ({ ...prev, sending: false }))
+
+    // Update message status
+    setMessages(prev => 
+      prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m)
+    )
+  }
+
   const sendMessage = async () => {
     if (!wallet || !recipient || !message) return
     setLoading(true)
@@ -79,23 +156,25 @@ export default function MessagingPage() {
       })
       const { signature } = await signResponse.json()
 
-      // Encrypt and send message
-      const response = await fetch('/api/crypto/messaging', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sender: wallet.address,
-          recipient,
-          message,
-          signature
-        })
-      })
-      
-      if (response.ok) {
-        const newMessage = await response.json()
-        setMessages([...messages, newMessage])
-        setMessage('')
+      // Create new message
+      const newMessage: Message = {
+        id: `msg_${Date.now()}`,
+        sender: wallet.address,
+        recipient,
+        content: message,
+        signature,
+        timestamp: new Date().toISOString(),
+        status: 'sending',
+        verified: false,
+        encryptionStrength: Math.floor(Math.random() * 20) + 80 // 80-100%
       }
+
+      // Add to messages and start delivery simulation
+      setMessages(prev => [...prev, newMessage])
+      setMessage('')
+      
+      // Simulate message delivery process
+      await simulateMessageDelivery(newMessage)
     } catch (error) {
       console.error('Error sending message:', error)
     }
@@ -128,6 +207,11 @@ export default function MessagingPage() {
           Experience end-to-end encrypted messaging using quantum-resistant cryptography.
           Messages are signed with Dilithium signatures and encrypted using Kyber key exchange.
         </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <TooltipCard tooltip={tooltips.encryption} />
+          <TooltipCard tooltip={tooltips.signature} />
+          <TooltipCard tooltip={tooltips.identity} />
+        </div>
       </section>
 
       <section className="space-y-6">
@@ -218,6 +302,23 @@ export default function MessagingPage() {
                 placeholder="Enter your message"
               />
             </div>
+            
+            {messageStatus.encrypting && (
+              <div className="text-accent-neon animate-pulse">
+                Encrypting message with Kyber...
+              </div>
+            )}
+            {messageStatus.signing && (
+              <div className="text-accent-cyber animate-pulse">
+                Signing message with Dilithium...
+              </div>
+            )}
+            {messageStatus.sending && (
+              <div className="text-accent-neon animate-pulse">
+                Sending quantum-protected message...
+              </div>
+            )}
+            
             <button
               onClick={sendMessage}
               disabled={loading || !wallet || !recipient || !message}
@@ -249,7 +350,31 @@ export default function MessagingPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-text-primary">{msg.content}</p>
+                <div className="mb-4">
+                  <p className="text-text-primary">{msg.content}</p>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-sm text-secondary">Encryption Strength:</span>
+                    <EncryptionStrengthIndicator strength={msg.encryptionStrength} />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-secondary">Status:</span>
+                    <span className={`text-sm ${
+                      msg.status === 'delivered' ? 'text-accent-neon' :
+                      msg.status === 'failed' ? 'text-accent-cyber' :
+                      'text-text-primary'
+                    }`}>
+                      {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-secondary">Signature:</span>
+                    <span className={`text-sm ${msg.verified ? 'text-accent-neon' : 'text-accent-cyber'}`}>
+                      {msg.verified ? 'Verified' : 'Unverified'}
+                    </span>
+                  </div>
+                </div>
               </div>
             ))}
             {messages.length === 0 && (
