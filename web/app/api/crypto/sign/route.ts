@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { sign } from '@/lib/pqcl/dilithium'
+import { sign } from '../../../../lib/pqcl/dilithium'
 
 export async function POST(request: Request) {
   try {
