@@ -6,6 +6,7 @@ const nextConfig = {
   webpack: (config) => {
     // Add PQCL to module directories
     config.resolve.modules = [
+      'app',
       'lib',
       'components',
       'node_modules',
@@ -15,8 +16,9 @@ const nextConfig = {
     // Add path aliases
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': '.',
-      '@/pqcl': './lib/pqcl',
+      '@': './app',
+      '@/lib': './lib',
+      '@/pqcl/dilithium': './lib/pqcl/dilithium',
       '@/components': './components'
     }
     
