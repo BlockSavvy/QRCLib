@@ -1,7 +1,10 @@
 import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const config = {
   output: 'standalone',
   experimental: {
     esmExternals: true
@@ -14,7 +17,7 @@ const nextConfig = {
     
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@/pqcl/dilithium': path.join(__dirname, 'lib/pqcl/dilithium'),
+      '@/pqcl/dilithium': path.join(__dirname, 'lib/pqcl/dilithium.ts'),
       '@/components': path.join(__dirname, 'components'),
       '@/lib': path.join(__dirname, 'lib')
     }
@@ -23,4 +26,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig 
+export default config 
