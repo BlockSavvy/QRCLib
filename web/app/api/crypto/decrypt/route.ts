@@ -2,20 +2,26 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { encryptedMessage, senderPublicKey, recipientPrivateKey } = await request.json()
+    const { ciphertext, nonce, senderPublicKey, recipientPrivateKey } = await request.json()
     
-    if (!encryptedMessage || !senderPublicKey || !recipientPrivateKey) {
+    if (!ciphertext || !nonce || !senderPublicKey || !recipientPrivateKey) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
       )
     }
 
-    // Mock decryption - in production, this would use the PQCL library
-    const base64Message = Buffer.from(encryptedMessage, 'base64').toString()
-    const decryptedMessage = base64Message.split('_')[1] // Extract original message
+    // In a real implementation, we would:
+    // 1. Use recipient's private key and sender's public key to derive shared secret
+    // 2. Verify the signature using sender's public key
+    // 3. Decrypt the message using the shared secret
     
-    return NextResponse.json({ decryptedMessage })
+    // For now, we'll use a simple mock decryption
+    const decryptedMessage = Buffer.from(ciphertext, 'base64').toString()
+    
+    return NextResponse.json({
+      message: decryptedMessage
+    })
   } catch (error) {
     console.error('Error decrypting message:', error)
     return NextResponse.json(
