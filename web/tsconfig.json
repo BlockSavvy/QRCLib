@@ -19,9 +19,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./app/*", "./lib/*"],
-      "@/components/*": ["./components/*"],
-      "@/pqcl/*": ["./lib/pqcl/*"]
+      "@/*": ["./app/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/pqcl/*": ["./lib/pqcl/*"],
+      "@/components/*": ["./components/*"]
     },
     "baseUrl": "."
   },

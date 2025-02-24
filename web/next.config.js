@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
 const nextConfig = {
   experimental: {
     esmExternals: true
@@ -6,13 +11,13 @@ const nextConfig = {
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': './app',
-      '@/lib': './lib',
-      '@/pqcl': './lib/pqcl',
-      '@/components': './components'
+      '@': path.resolve(__dirname, './app'),
+      '@/lib': path.resolve(__dirname, './lib'),
+      '@/pqcl': path.resolve(__dirname, './lib/pqcl'),
+      '@/components': path.resolve(__dirname, './components')
     }
     return config
   }
 }
 
-module.exports = nextConfig 
+export default nextConfig 
