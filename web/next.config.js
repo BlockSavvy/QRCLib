@@ -9,7 +9,8 @@ const config = {
       ...config.resolve.alias,
       '@': './app',
       '@/lib': './lib',
-      '@/components': './components'
+      '@/components': './components',
+      '@/pqcl/dilithium': './lib/pqcl/dilithium.ts'
     }
     return config
   }
