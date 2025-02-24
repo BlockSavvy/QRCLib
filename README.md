@@ -1,5 +1,12 @@
 # Quantum-Resistant Cryptography Library (QRCLib)
 
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Test Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)](https://pqcl.aiya.sh/coverage)
+[![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-latest-orange.svg)](https://pqcl.aiya.sh/docs)
+[![Build Status](https://img.shields.io/badge/build-passing-success.svg)](https://github.com/BlockSavvy/QRCLib/actions)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A Python library implementing quantum-resistant cryptographic algorithms, including Kyber (Key Encapsulation) and Dilithium (Digital Signatures). This library is designed to be resistant to attacks from both classical and quantum computers.
 
 ## Features
@@ -9,18 +16,42 @@ A Python library implementing quantum-resistant cryptographic algorithms, includ
 - **Number Theoretic Transform (NTT)**: Efficient polynomial operations
 - **Comprehensive Examples**: Real-world applications of quantum-resistant cryptography
 
-## Live Demo
+## Live Demo & Screenshots
 
-Visit our interactive demo at [pqcl.aiya.sh](https://pqcl.aiya.sh) to explore:
+Visit our interactive demo at [pqcl.aiya.sh](https://pqcl.aiya.sh) to explore the library in action.
 
-- Basic cryptographic operations (key generation, signing, verification)
-- Secure messaging with quantum-resistant encryption
-- Blockchain implementation with post-quantum security
-- Bitcoin wallet protection against quantum threats
-- Secure file storage and sharing
-- API security examples
+### Basic Operations Demo
+![Basic Operations](/screenshots/basic-operations.png)
+*Key generation, signing, and verification with quantum-resistant algorithms*
 
-The live demo provides hands-on experience with quantum-resistant cryptography and showcases real-world applications of the library.
+### Secure Messaging
+![Secure Messaging](/screenshots/secure-messaging.png)
+*End-to-end encrypted messaging with post-quantum security*
+
+### Blockchain Demo
+![Blockchain](/screenshots/blockchain-demo.png)
+*Quantum-resistant blockchain with secure transactions*
+
+### Bitcoin Protection
+![Bitcoin Protection](/screenshots/bitcoin-protection.png)
+*Protecting Bitcoin wallets against quantum threats*
+
+### File Storage & Sharing
+![File Storage](/screenshots/file-storage.png)
+*Secure file storage with quantum-resistant encryption*
+
+### API Security Demo
+![API Security](/screenshots/api-security.png)
+*Quantum-safe API authentication and data protection*
+
+## Quick Links
+
+- [📚 Documentation](https://pqcl.aiya.sh/docs)
+- [🚀 Live Demo](https://pqcl.aiya.sh)
+- [💻 GitHub Repository](https://github.com/BlockSavvy/QRCLib)
+- [📊 Coverage Report](https://pqcl.aiya.sh/coverage)
+- [🔒 Security Guidelines](https://pqcl.aiya.sh/docs/security)
+- [📝 API Reference](https://pqcl.aiya.sh/docs/api)
 
 ## Installation
 
