@@ -1,8 +1,3 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
 /** @type {import('next').NextConfig} */
 const config = {
   output: 'standalone',
@@ -11,16 +6,15 @@ const config = {
   },
   webpack: (config) => {
     config.resolve.modules = [
-      path.join(__dirname),
       'node_modules',
       ...config.resolve.modules || []
     ]
     
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@/pqcl/dilithium': path.join(__dirname, 'lib/pqcl/dilithium.ts'),
-      '@/components': path.join(__dirname, 'components'),
-      '@/lib': path.join(__dirname, 'lib')
+      '@/pqcl': './lib/pqcl',
+      '@/components': './components',
+      '@/lib': './lib'
     }
     
     return config

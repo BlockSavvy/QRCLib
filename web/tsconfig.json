@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./app/*"],
       "@/lib/*": ["./lib/*"],
-      "@/pqcl/dilithium": ["./lib/pqcl/dilithium.ts"],
+      "@/pqcl/*": ["./lib/pqcl/*"],
       "@/components/*": ["./components/*"]
     },
     "baseUrl": "."
