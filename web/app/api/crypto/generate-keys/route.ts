@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateKeys } from '../../../../lib/pqcl/dilithium'
+import { generateKeys } from '@/pqcl/dilithium'
 
 export async function GET() {
   try {
