@@ -2,17 +2,6 @@
 const nextConfig = {
   experimental: {
     esmExternals: true
-  },
-  webpack: (config) => {
-    config.resolve = {
-      ...config.resolve,
-      alias: {
-        ...config.resolve.alias,
-        '@/pqcl': './lib/pqcl',
-        '@/components': './components'
-      }
-    }
-    return config
   }
 }
 
