@@ -18,7 +18,7 @@ A Python library implementing quantum-resistant cryptographic algorithms, includ
 
 ## Live Demo & Screenshots
 
-Visit our interactive demo at [pqcl.aiya.sh](https://pqcl.aiya.sh) to explore the library in action.
+Visit the interactive demo at [pqcl.aiya.sh](https://pqcl.aiya.sh) to explore the library in action.
 
 ### Basic Operations Demo
 ![Basic Operations](/screenshots/basic-operations.png)
@@ -221,7 +221,7 @@ The tests cover:
 
 ### Test Coverage
 
-Our test suite maintains high code coverage to ensure reliability:
+The test suite maintains high code coverage to ensure reliability:
 
 - Overall coverage: 95%
 - Core modules:
@@ -314,4 +314,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - Based on the CRYSTALS-Kyber and CRYSTALS-Dilithium specifications
 - Inspired by various post-quantum cryptography implementations
-- Thanks to all contributors and researchers in the field
