@@ -6,7 +6,8 @@ const nextConfig = {
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': '.',
+      '@': './app',
+      '@/lib': './lib',
       '@/pqcl': './lib/pqcl',
       '@/components': './components'
     }
