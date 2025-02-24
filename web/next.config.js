@@ -11,6 +11,7 @@ const config = {
   },
   webpack: (config) => {
     config.resolve.modules = [
+      path.join(__dirname),
       'node_modules',
       ...config.resolve.modules || []
     ]
