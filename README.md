@@ -79,8 +79,9 @@ a semi-honest agent. All three limits are spelled out in
 ## Demo
 
 The Next.js app in [`web/`](web/) is what [pqcl.aiya.sh](https://pqcl.aiya.sh) deploys.
-`/examples/basic` generates, signs, and verifies with ML-DSA-65 (`@noble/post-quantum`) on the server.
-That matches `qrclib.dsa`, not the old hash stubs. Messaging, the toy chain, and the Bitcoin page are still illustrations; they are not a wallet or a consensus change.
+The browser runs the same X-Wing and hybrid signature constructions as `qrclib.hybrid` (`@noble/post-quantum`).
+The mailbox is not forward secret. The Bitcoin page commits 32 bytes; it does not change consensus.
+CKKS stays in `examples/lhe_example.py`. The old toy chain, file vault, and API-gateway pages are gone.
 
 ## Layout
 

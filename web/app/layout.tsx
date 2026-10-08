@@ -1,63 +1,50 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const sans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-sans" });
+const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "PQCL - Quantum-Resistant Cryptography Library",
-  description: "A Python library implementing quantum-resistant cryptographic algorithms, including Kyber and Dilithium.",
+  title: "QRCLib",
+  description: "ML-KEM, ML-DSA, X-Wing, and an optional CKKS envelope. Hybrid by default.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+const links = [
+  ["/", "Bench"],
+  ["/exchange", "Exchange"],
+  ["/sign", "Sign"],
+  ["/messages", "Mail"],
+  ["/bitcoin", "Bitcoin"],
+  ["/envelope", "Envelope"],
+];
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <nav>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex">
-                <div className="flex-shrink-0 flex items-center">
-                  <Link href="/" className="text-xl font-bold neon-text">
-                    PQCL
-                  </Link>
-                </div>
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                  <Link href="/examples/basic" className="text-secondary hover:neon-text px-3 py-2 rounded-md text-sm font-medium">
-                    Basic Examples
-                  </Link>
-                  <Link href="/examples/messaging" className="text-secondary hover:neon-text px-3 py-2 rounded-md text-sm font-medium">
-                    Secure Messaging
-                  </Link>
-                  <Link href="/examples/blockchain" className="text-secondary hover:neon-text px-3 py-2 rounded-md text-sm font-medium">
-                    Blockchain
-                  </Link>
-                  <Link href="/examples/bitcoin" className="text-secondary hover:neon-text px-3 py-2 rounded-md text-sm font-medium">
-                    Bitcoin Protection
-                  </Link>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <a
-                  href="https://github.com/BlockSavvy/QRCLib"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-secondary hover:neon-text"
-                >
-                  GitHub
-                </a>
-              </div>
-            </div>
+      <body className={`${sans.variable} ${mono.variable} font-sans`}>
+        <header className="border-b border-line">
+          <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4">
+            <Link href="/" className="text-sm font-medium tracking-wide text-brass-2">
+              QRCLib
+            </Link>
+            <nav className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted">
+              {links.map(([href, label]) => (
+                <Link key={href} href={href} className="min-h-11 py-2">
+                  {label}
+                </Link>
+              ))}
+            </nav>
+            <a
+              href="https://github.com/BlockSavvy/QRCLib"
+              className="ml-auto text-sm text-muted"
+            >
+              GitHub
+            </a>
           </div>
-        </nav>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
+        </header>
+        <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
       </body>
     </html>
   );

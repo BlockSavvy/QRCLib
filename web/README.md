@@ -1,10 +1,9 @@
 # QRCLib web demo
 
-Next.js app deployed at [pqcl.aiya.sh](https://pqcl.aiya.sh).
+Deployed at [pqcl.aiya.sh](https://pqcl.aiya.sh).
 
-`/examples/basic` calls `/api/crypto/*`, which uses ML-DSA-65 from `@noble/post-quantum`.
-That is the same signature algorithm as `qrclib.dsa` in the Python package.
-The other example pages are illustrations and are not a wallet, a chain, or a mailbox.
+The browser runs X-Wing and the hybrid signature with `@noble/post-quantum`, matching `qrclib.hybrid`.
+CKKS is not evaluated here. Run `python examples/lhe_example.py` after `pip install -e '.[fhe]'`.
 
 ```bash
 npm install
