@@ -72,8 +72,8 @@ export default function BasicExamplesPage() {
           Basic Cryptographic Operations
         </h1>
         <p className="text-secondary mb-8">
-          Explore the fundamental operations of quantum-resistant cryptography:
-          key generation, digital signatures, and verification.
+          Explore ML-DSA-65 (FIPS 204): key generation, a real signature, and verification.
+          Keys are large. That is the algorithm, not padding.
         </p>
       </section>
 

@@ -53,3 +53,6 @@ coverage_report/
 .Trashes
 ehthumbs.db
 Thumbs.db 
+# local artifacts
+.venv/
+sealed-bay-4.qrs

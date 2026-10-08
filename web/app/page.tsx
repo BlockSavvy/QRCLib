@@ -10,9 +10,9 @@ export default function Home() {
           Quantum-Resistant Cryptography Library
         </h1>
         <p className="text-xl text-secondary max-w-3xl mx-auto">
-          A Python library implementing post-quantum cryptographic algorithms, 
-          including Kyber (Key Encapsulation) and Dilithium (Digital Signatures).
-          Protect your applications against quantum computer threats.
+          A Python library for ML-KEM (FIPS 203) and ML-DSA (FIPS 204),
+          with hybrid X25519 and Ed25519. The signature demo on this site
+          runs real ML-DSA-65, not a hash stand-in.
         </p>
       </section>
 
@@ -29,7 +29,7 @@ export default function Home() {
           />
           <DemoCard
             title="Secure Messaging"
-            description="End-to-end encrypted chat using Kyber for key exchange and Dilithium for signatures."
+            description="A sketched mailbox. Signatures on Basic Operations are the real ML-DSA-65 path."
             link="/examples/messaging"
             icon="💬"
           />
@@ -67,18 +67,18 @@ export default function Home() {
           </h2>
           <div className="space-y-4">
             <FeatureCard
-              title="Kyber Key Encapsulation"
-              description="NIST-approved post-quantum key exchange mechanism"
+              title="ML-KEM-768"
+              description="FIPS 203 key encapsulation. The Python default is hybrid X-Wing."
               icon="🔄"
             />
             <FeatureCard
-              title="Dilithium Signatures"
-              description="Quantum-resistant digital signatures for document authenticity"
+              title="ML-DSA-65"
+              description="FIPS 204 signatures. Basic Operations on this site signs with these keys."
               icon="✍️"
             />
             <FeatureCard
               title="Hybrid Protection"
-              description="Combine classical and quantum-resistant algorithms"
+              description="X-Wing for keys, ML-DSA-65 plus Ed25519 for signatures"
               icon="🛡️"
             />
             <FeatureCard

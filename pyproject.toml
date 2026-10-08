@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qrclib"
+version = "1.0.0"
+description = "ML-KEM, ML-DSA, X-Wing, and an optional CKKS envelope."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "BlockSavvy", email = "m@aiya.sh" }]
+keywords = ["ml-kem", "ml-dsa", "post-quantum", "x-wing", "fips-203", "fips-204"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+]
+dependencies = ["cryptography>=48"]
+
+[project.optional-dependencies]
+fhe = ["tenseal>=0.3.16"]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/BlockSavvy/QRCLib"
+Repository = "https://github.com/BlockSavvy/QRCLib"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

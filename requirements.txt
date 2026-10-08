@@ -1,8 +1,2 @@
-numpy>=2.0.2
-pytest>=8.3.4
-coverage>=7.6.12
-cryptography>=44.0.1
-cffi>=1.17.1
-flask>=3.0.2
-pytest-cov>=6.0.0
-pytest-xdist>=3.6.1 
+cryptography>=48
+pytest>=8
