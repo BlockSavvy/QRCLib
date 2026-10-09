@@ -7,6 +7,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { sha3_256, shake256 } from "@noble/hashes/sha3.js";
 import { ml_dsa65 } from "@noble/post-quantum/ml-dsa.js";
 import { ml_kem768 } from "@noble/post-quantum/ml-kem.js";
+import { slh_dsa_sha2_128f } from "@noble/post-quantum/slh-dsa.js";
 
 export const XWING_LABEL = Uint8Array.from([0x5c, 0x2e, 0x2f, 0x2f, 0x5e, 0x5c]);
 const SIGN_DOMAIN = new TextEncoder().encode("QRCL-HYBRID-SIGN-v1");
@@ -265,4 +266,20 @@ export function runBench(): Bench {
     xwingCt: encapsulated.ciphertext.length,
     hybridSig: signature.length,
   };
+}
+
+export const SLH_SHA2_128F = { publicKey: 32, secretKey: 64, signature: 17088 } as const;
+export const SLH_SHA2_128S_SIGNATURE = 7856;
+
+export function generateSlh(): { publicKey: Uint8Array; secretKey: Uint8Array } {
+  return slh_dsa_sha2_128f.keygen();
+}
+
+export function slhSign(secretKey: Uint8Array, message: Uint8Array): Uint8Array {
+  return slh_dsa_sha2_128f.sign(message, secretKey);
+}
+
+export function slhVerify(publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array): boolean {
+  if (signature.length !== SLH_SHA2_128F.signature || publicKey.length !== SLH_SHA2_128F.publicKey) return false;
+  return slh_dsa_sha2_128f.verify(signature, message, publicKey);
 }

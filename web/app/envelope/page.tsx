@@ -8,7 +8,8 @@ export default function Envelope() {
         <p className="mt-3 text-sm leading-relaxed text-muted">
           CKKS is approximate encryption for real numbers. Sums and means run on the ciphertexts.
           This page does not run that math. TenSEAL is a native library, and pretending to evaluate it
-          in the browser would teach the wrong thing.
+          in the browser would teach the wrong thing. CKKS is also a lattice assumption. If estimates
+          for that family move, this envelope moves with them. Use it for a short computation, not as a vault.
         </p>
       </div>
       <Panel title="Three parties">

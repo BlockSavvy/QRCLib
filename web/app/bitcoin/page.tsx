@@ -112,9 +112,11 @@ export default function Bitcoin() {
           <Note>No attestation yet. The address is created the first time you protect a txid.</Note>
         )}
         <Note>
-          This does not make the coins quantum-safe. After the secp256k1 public key is revealed, a break of that
-          curve can still produce a spend that miners accept. Move the coins when a post-quantum output type exists.
-          Do not reuse the address.
+          This does not make the coins quantum-safe. An address that has never sent a transaction has not
+          published its secp256k1 key, and that is the exposure to avoid. After the key is revealed, a break
+          of that curve can still produce a spend that miners accept. Gather a multisig off chain so the
+          individual signatures are not published. Do not rush a migration to get there. Move the coins when
+          a post-quantum output type exists, and do not reuse the address.
         </Note>
         <Python
           source={`from qrclib.bitcoin import QuantumProtectedWallet

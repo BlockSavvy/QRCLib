@@ -31,6 +31,31 @@ without wheels." If the wheel is missing, fail closed.
   Ed25519 signature. Forging it means forging both. Verifiers must check both
   halves. A deployment that checks only one has thrown the construction away.
 
+## Two threats
+
+A quantum computer and a future shortcut in structured math are different
+failures.
+
+* Against a quantum computer, the hybrid is the point. Shor's algorithm hits
+  the curve. ML-DSA-65 is there so that hit is not enough. X-Wing is the same
+  idea for key agreement: ML-KEM-768 or X25519, either one.
+* Against a shortcut in lattices, the hybrid does not help. Both halves are
+  structured. The hash-based answer is SLH-DSA (FIPS 205). `cryptography` 50
+  ships ML-KEM and ML-DSA and does not ship SLH-DSA. This library will not
+  vendor a second implementation. The browser demo at `/hash` runs
+  SLH-DSA-SHA2-128f from `@noble/post-quantum` so the size is visible:
+  17,088 bytes, against 3,373 for the hybrid. Hash-based signatures are the
+  conservative choice today. They are not the smaller one. They become the
+  efficient one only if lattice parameters have to grow a long way. NIST has
+  not published that growth. ML-KEM-1024 and ML-DSA-87 are the largest
+  standardized sets, and they are already in `qrclib.kem` and `qrclib.dsa`.
+  Do not invent a parameter set "ten times larger."
+* Key agreement cannot move to hashes. That is a theorem, not a preference.
+  X-Wing stays the default. Do not fork the CFRG draft into a private hybrid.
+
+The CKKS envelope is in the lattice family this second threat is about. It is
+a short-horizon computation, not archival storage.
+
 Kyber and Dilithium names in `qrclib.kyber` and `qrclib.dilithium` are aliases
 onto ML-KEM-768 and ML-DSA-65. They are not Round-3 wire formats.
 

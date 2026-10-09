@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Action, Note, Panel, Python, Reading, Steps } from "@/components/ui";
 import { generateHybridSign, hybridSign, hybridVerify, toHex, utf8, type HybridSignKeys } from "@/lib/pq";
@@ -57,6 +58,11 @@ export default function SignPage() {
         <p className="mt-3 text-sm leading-relaxed text-muted">
           The signature is ML-DSA-65 concatenated with Ed25519. Checking one half and skipping the other
           is not this construction. Edit the text after signing, or flip a byte, and the check should fail.
+          If the worry is a shortcut in the lattice rather than a quantum computer, use the{" "}
+          <Link href="/hash" className="text-brass-2">
+            hash signature
+          </Link>
+          .
         </p>
       </div>
       <Panel title="Try it">

@@ -80,8 +80,9 @@ a semi-honest agent. All three limits are spelled out in
 
 The Next.js app in [`web/`](web/) is what [pqcl.aiya.sh](https://pqcl.aiya.sh) deploys.
 The browser runs the same X-Wing and hybrid signature constructions as `qrclib.hybrid` (`@noble/post-quantum`).
-The mailbox is not forward secret. The Bitcoin page commits 32 bytes; it does not change consensus.
-CKKS stays in `examples/lhe_example.py`. The old toy chain, file vault, and API-gateway pages are gone.
+`/hash` runs SLH-DSA-SHA2-128f in the browser only. `cryptography` 50 does not ship FIPS 205, and this
+library does not vendor a second copy. The mailbox is not forward secret. The Bitcoin page commits 32 bytes;
+it does not change consensus. CKKS stays in `examples/lhe_example.py` and is a short-horizon lattice computation.
 
 ## Layout
 

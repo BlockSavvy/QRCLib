@@ -7,6 +7,7 @@ const links = [
   ["/", "Start"],
   ["/exchange", "Exchange"],
   ["/sign", "Sign"],
+  ["/hash", "Hash"],
   ["/messages", "Mail"],
   ["/bitcoin", "Bitcoin"],
   ["/envelope", "Envelope"],

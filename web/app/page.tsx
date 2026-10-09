@@ -6,17 +6,75 @@ import { Action, Note, Panel, Reading } from "@/components/ui";
 import { runBench, type Bench } from "@/lib/pq";
 
 const tour = [
-  ["/exchange", "Exchange", "Two parties agree on a secret without sending it."],
-  ["/sign", "Sign", "A signature that needs both a lattice and Ed25519 to pass."],
+  ["/exchange", "Exchange", "Two parties agree on a secret. Hashes cannot do this part."],
+  ["/sign", "Sign", "Lattice plus Ed25519. Both halves must pass. Aimed at a quantum computer."],
+  ["/hash", "Hash", "SLH-DSA. No lattice and no curve. Larger today, not smaller."],
   ["/messages", "Mail", "That secret becomes an encrypted session. It is not forward secret."],
-  ["/bitcoin", "Bitcoin", "The signature is too big for a transaction. A 32-byte commitment is not."],
-  ["/envelope", "Envelope", "Sums on encrypted numbers. That part runs in Python, not here."],
+  ["/bitcoin", "Bitcoin", "Leave the address unused. Commit 32 bytes. Keep the signature off chain."],
+  ["/envelope", "Envelope", "A lattice computation with a short horizon, not archival secrecy."],
 ];
+
+type Job = "agree" | "sign" | "hide" | "btc";
+type Worry = "quantum" | "structure";
+
+const advice: Record<Job, Record<Worry, { href: string; title: string; body: string }>> = {
+  agree: {
+    quantum: {
+      href: "/exchange",
+      title: "X-Wing",
+      body: "Key agreement needs a trapdoor. Hashes do not provide one. X-Wing stays confidential if either ML-KEM-768 or X25519 holds. The library also speaks ML-KEM-1024. There is no standard parameter set ten times larger, and inventing one would be a new cryptosystem.",
+    },
+    structure: {
+      href: "/exchange",
+      title: "Still X-Wing",
+      body: "A shortcut in lattices does not create a hash-based replacement for key agreement. The theorem is older than this argument: key agreement does not reduce to one-way functions. Use the hybrid, and treat long-term secrecy as something you rotate.",
+    },
+  },
+  sign: {
+    quantum: {
+      href: "/sign",
+      title: "Hybrid signature",
+      body: "ML-DSA-65 is there for a quantum computer. Ed25519 is there in case the lattice fails and the curve does not. Forging it means forging both. The signature is 3,373 bytes.",
+    },
+    structure: {
+      href: "/hash",
+      title: "SLH-DSA-SHA2-128f",
+      body: "This is the case for a hash signature. It does not use a lattice or a curve. It is 17,088 bytes, so it is the conservative choice, not the compact one. Python cannot run it until cryptography ships FIPS 205.",
+    },
+  },
+  hide: {
+    quantum: {
+      href: "/envelope",
+      title: "Do not archive secrets here",
+      body: "CKKS is a lattice. A quantum computer is not what breaks it. An improved lattice estimate might. Use it for a short computation an agent must not read in the clear, then throw the ciphertexts away.",
+    },
+    structure: {
+      href: "/envelope",
+      title: "This is the assumption under pressure",
+      body: "The envelope is fully homomorphic encryption on a lattice. If that family takes a hit, the envelope takes the hit. It was never a long-term vault. The agent is also assumed not to substitute an answer.",
+    },
+  },
+  btc: {
+    quantum: {
+      href: "/bitcoin",
+      title: "Do not reveal the secp256k1 key",
+      body: "An address that has never sent a transaction has not published its public key. When you do spend, miners still check secp256k1. The post-quantum signature stays off chain, behind a 32-byte commitment.",
+    },
+    structure: {
+      href: "/bitcoin",
+      title: "Same operational rule",
+      body: "Gather a multisig off chain, so the individual signatures are not published. A break then degrades to whoever holds the bundle, not to the whole network. Do not rush a migration to do this.",
+    },
+  },
+};
 
 export default function Home() {
   const [bench, setBench] = useState<Bench | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [job, setJob] = useState<Job>("sign");
+  const [worry, setWorry] = useState<Worry>("structure");
+  const pick = advice[job][worry];
 
   function go() {
     setBusy(true);
@@ -39,13 +97,40 @@ export default function Home() {
   return (
     <div className="space-y-6">
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-medium tracking-tight">Two locks on every door.</h1>
+        <h1 className="text-3xl font-medium tracking-tight">Two different threats. Two different locks.</h1>
         <p className="mt-3 text-base leading-relaxed text-muted">
-          Each operation pairs a post-quantum algorithm with the classical one it is meant to replace.
-          A break of only one family is not enough. Nothing on this site is a simulation of the math.
-          The browser runs the same constructions as the Python library.
+          A quantum computer breaks elliptic curves and leaves hashes and, as far as anyone has proved, lattices.
+          A shortcut in the structured math would hit lattices and might hit curves. Those are not the same failure,
+          and this site will not pretend one algorithm covers both.
         </p>
       </div>
+
+      <Panel eyebrow="CHOOSE" title="What are you actually doing?">
+        <Choice
+          label="Job"
+          value={job}
+          options={[
+            ["agree", "Agree on a secret"],
+            ["sign", "Sign a message"],
+            ["hide", "Hide numbers"],
+            ["btc", "Commit a Bitcoin tx"],
+          ]}
+          onChange={setJob}
+        />
+        <Choice
+          label="Worry"
+          value={worry}
+          options={[
+            ["quantum", "A quantum computer"],
+            ["structure", "A shortcut in the math"],
+          ]}
+          onChange={setWorry}
+        />
+        <Reading>{pick.body}</Reading>
+        <Link href={pick.href} className="inline-flex min-h-11 items-center border border-brass bg-brass px-4 text-sm text-ink">
+          {pick.title}
+        </Link>
+      </Panel>
 
       <Panel eyebrow="TOUR" title="What the other pages do">
         <ul className="space-y-3">
@@ -101,9 +186,44 @@ export default function Home() {
         <Size label="X-Wing public key" bytes={1216} max={1216} />
         <Note>
           A Bitcoin OP_RETURN output holds 80 bytes. The hybrid signature is 3,373 bytes, so it cannot go in the
-          transaction. The Bitcoin page puts a 32-byte hash of it on chain instead.
+          transaction. The hash signature is larger still, 17,088 bytes. The Bitcoin page puts a 32-byte hash of
+          the attestation on chain instead.
         </Note>
       </Panel>
+    </div>
+  );
+}
+
+function Choice<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: [T, string][];
+  onChange: (next: T) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-xs text-muted">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map(([id, text]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            className={
+              value === id
+                ? "min-h-11 border border-brass bg-brass px-3 text-sm text-ink"
+                : "min-h-11 border border-line bg-ink px-3 text-sm text-paper"
+            }
+          >
+            {text}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
